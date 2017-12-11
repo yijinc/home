@@ -1,5 +1,1 @@
-# blog
-个人博客
-# 目录
-## 2017年
-## 2016年
+# [个人主页](https://yijinc.github.io/home)
