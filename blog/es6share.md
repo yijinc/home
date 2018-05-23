@@ -10,7 +10,33 @@ ES6 拥有一系列 JavaScript 新特性的标准，能让开发变得更简单�
 - [MDN JavaScript 标准库](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects)
 
 ### 举例
-1 . **解构赋值**：经常可以碰到去请求后端数据多（分类）的时候，提取json，需要依次给变量赋值时
+1 . let 具有作用域 在的代码块内有效。
+
+``` javascript
+var btns = document.querySelectorAll('button');
+for (var i=0; i<btns.length; i++) {
+    btns[i].onclick = function() {
+        alert(i); // i 总是为 btns.length-1
+    }
+}
+```
+
+上面代码发现 i 总是为 btns.length-1， 因为 click事件为异步，for（同步）循环完 i == btns.length-1， 然而 把上面 `var` 改成 `let` 便能达到预期结果。 
+另一种做法是，在 `for` 循环函数内 写成自执行函数（闭包），让 i 作用域值总是为当前 i
+``` javascript
+var btns = document.querySelectorAll('button');
+for (var i=0; i<btns.length; i++) {
+    btns[i].onclick = function () {
+        (function(){
+            alert(i)
+        })(i)
+    }
+}
+```
+
+---
+
+2 . **解构赋值**：经常可以碰到去请求后端数据多（分类）的时候，提取json，需要依次给变量赋值时
 ``` javascript
 const response = {
 	homeData: { distance: 100, score: 1 },
@@ -29,7 +55,7 @@ import React, { Component } from 'react'
 
 -----
 
-2 . **Object.assign( )**：我们需要编辑一个球员player，要求在编辑过程中可以随时取消，所以需要**深拷贝**这个对象，以便修改这个新对象后，且可以退回到原来的对象
+3 . **Object.assign( )**：我们需要编辑一个球员player，要求在编辑过程中可以随时取消，所以需要**深拷贝**这个对象，以便修改这个新对象后，且可以退回到原来的对象
 
 ``` javascript
 const player = { 
@@ -44,7 +70,7 @@ const editPlayer = Object.assign({}, player, { isEdit: true });
 还有很多实用的操作对象或数组的方法，比如Array.fill()、Array.from()、Object.freeze(obj)
 
 --- 
-3 . **class** ：类，这里可与Angular 的Component做对比，首先es6是没有private属性的，angular组件中方法在模版中使用不需要关心 `this`，而在 es6 中 和一些框架如react 需要谨慎对待 this
+4 . **class** ：类，这里可与Angular 的Component做对比，首先es6是没有private属性的，angular组件中方法在模版中使用不需要关心 `this`，而在 es6 中 和一些框架如react 需要谨慎对待 this
 ```  javascript
 
 const btn = document.getElementById('btn');
