@@ -62,3 +62,22 @@ HTTP遵循经典的client-server 模型，HTTP是无状态协议
 
 
 
+
+### Cookie
+
+**Cookie** 是服务器发送到用户浏览器并保存在本地的一小块数据，它会在浏览器下次向同一服务器再发起请求时被携带并发送到服务器上。由于服务器指定Cookie后，浏览器的每次请求都会携带Cookie数据，会带来额外的性能开销（尤其是在移动环境下），新的浏览器有了新的存储API（`sessionStorage`、`localStorage`、 `IndexedDB`），Cookie渐渐被淘汰。
+
+服务器使用 `Set-Cookie` 响应头部向用户代理（浏览器）发送Cookie信息
+
+Cookie 可以指定一个特定的过期时间（Expires）或有效期（Max-Age），当Cookie的过期时间被设定时，设定的日期和时间只与客户端相关，而不是服务端。
+
+> Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
+
+如果 Cookie 没有指定 Expires 或 Max-Age，浏览器关闭之后它会被自动删除，也就是说它仅在会话期内有效
+
+标记为 `Secure` 的 Cookie 只能通过 HTTPS 请求发送给服务端。  
+标记为 `HttpOnly` 的 Cookie 无法通过 JavaScript 的 `Document.cookie` API访问，可在一定程度上避免跨域脚本 (XSS) 攻击
+
+> Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Secure; HttpOnly
+
+**Domain** 和 **Path** 标识定义了Cookie的作用域
