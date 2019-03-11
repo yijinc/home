@@ -81,3 +81,79 @@ Cookie 可以指定一个特定的过期时间（Expires）或有效期（Max-Ag
 > Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Secure; HttpOnly
 
 **Domain** 和 **Path** 标识定义了Cookie的作用域
+
+
+
+### CORS
+跨域资源共享CORS（Cross-Origin Resource Sharing）是一种浏览器机制。
+
+**同源策略** ：两个页面/资源的协议，端口（如果有指定）和域名都相同，则为同**源**
+
+前端异步请求数据经常会出现在浏览器控制台里的错误
+
+`
+Failed to load https://example.com/: No ‘Access-Control-Allow-Origin’ header is present on the requested resource. Origin ‘https://anfo.pl' is therefore not allowed access. If an opaque response serves your needs, set the request’s mode to ‘no-cors’ to fetch the resource with CORS disabled.
+`
+
+出于安全原因，浏览器限制从脚本内（例如 **XMLHttpRequest** 或 **Fetch**）发起的跨**源**HTTP请求，这意味着使用这些API的Web应用程序只能从加载应用程序的同一个域请求HTTP资源，除非响应报文包含了正确CORS响应头。
+
+
+#### 什么情况下需要 CORS
+- 由 XMLHttpRequest 或 Fetch 发起的跨域 HTTP 请求
+- Web 字体 (CSS 中通过 @font-face 使用跨域字体资源)
+- WebGL 贴图
+- 使用 drawImage 将 Images/video 画面绘制到 canvas
+- 样式表（使用 CSSOM）
+
+
+**预检请求（preflight request）** 要求浏览器必须首先使用 OPTIONS 方法发起一个预检请求到服务器，从而获知服务端是否允许该跨域请求。服务器确认允许之后，才发起实际的 HTTP 请求。在预检请求的返回中，服务器端也可以通知客户端，是否需要携带身份凭证（包括 Cookies 和 HTTP 认证相关数据）。
+
+当请求满足下述任一条件时，即应首先发送预检请求
+- 使用了下面任一 HTTP 方法（*Access-Control-Request-Method*）：PUT / DELETE / CONNECT / OPTIONS / TRACE / PATCH
+- 人为设置了对 [CORS 安全的首部字段集合](https://fetch.spec.whatwg.org/#cors-safelisted-request-header)（*Access-Control-Request-Headers*） 之外的其他首部字段
+- *Content-Type* 的值不属于下列之一: `application/x-www-form-urlencoded`、 `multipart/form-data`、 `text/plain`
+- 请求中的 *XMLHttpRequestUpload* 对象注册了事件监听器。
+- 请求中使用了 *ReadableStream* 对象。
+
+浏览器检测从 JavaScript 中发起的请求需要被预检时，将发送了一个使用 OPTIONS 方法的“预检请求”，该方法不会对服务器资源产生影响。预检请求中携带的 *Access-Control-Request-Method* 或 *Access-Control-Request-Headers* 等信息发送给服务器，服务器决定允许并响应确认这些信息字段。服务器还可能在首部字段加上 *Access-Control-Max-Age*（该响应的有效时间），在有效时间内，浏览器无须为同一请求再次发起预检请求。
+
+#### HTTP 响应首部字段
+> Access-Control-Allow-Origin: <origin> | *
+
+**origin** 参数的值指定了允许访问该资源的外域 URI，如果指定了origin，响应首部中的 Vary 字段的值也必须包含 origin 。
+
+**\*** 表示允许来自所有域的请求（**对于不需要携带身份凭证的请求**）。
+
+> Access-Control-Allow-Credentials: true
+
+**Access-Control-Allow-Credentials** 头指定了当浏览器的credentials设置为true时是否允许浏览器读取response的内容。当用在对preflight预检测请求的响应中时，它指定了实际的请求是否可以使用credentials。如果对此类请求的响应中不包含该字段，这个响应将被忽略掉，并且浏览器也不会将相应内容返回给网页。
+
+如果需要发送身份凭证（携带cookie）请求，在js中设置
+``` javascript
+var xhr = new XMLHttpRequest();
+xhr.open('GET', url, true);
+xhr.withCredentials = true;  // 向服务器发送 cookie
+xhr.onreadystatechange = handler;
+xhr.send(); 
+```
+如果服务器端的响应头部没有 `Access-Control-Allow-Credentials: true`，则响应内容不会返回给请求的发起者。
+如果服务器端的响应头设置为 `Access-Control-Allow-Origin: *`，请求将会失败。 而将 *Access-Control-Allow-Origin* 的值设置为发起者的uri，则请求将成功执行。
+
+
+> Access-Control-Expose-Headers: X-My-Custom-Header, X-Another-Custom-Header
+
+**Access-Control-Expose-Headers** 头让服务器把允许浏览器访问的头放入白名单
+
+这样，在跨域访问时，XMLHttpRequest对象就能够通过getResponseHeader()拿到X-My-Custom-Header和 X-Another-Custom-Header 响应头了。
+
+> Access-Control-Max-Age: <delta-seconds>
+
+**Access-Control-Max-Age** 头指定了preflight请求的结果能够被缓存多久，单位秒
+
+> Access-Control-Allow-Methods: \<method\>[, \<method\>]*
+
+**Access-Control-Allow-Methods** 首部字段用于预检请求的响应。其指明了实际请求所允许使用的 HTTP 方法。
+
+> Access-Control-Allow-Headers: \<field-name\>[, \<field-name\>]*
+
+**Access-Control-Allow-Headers** 首部字段用于预检请求的响应。其指明了实际请求中允许携带的首部字段。
